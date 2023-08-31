@@ -1,10 +1,8 @@
+import os
+import zipfile
 from tkinter import *
 from tkinter import filedialog, ttk, messagebox
-import webbrowser
 from threading import Thread
-import zipfile
-import time
-import os
 
 def openFile():
     filepath = filedialog.askopenfilename(
@@ -112,13 +110,5 @@ remove_btn.place(x=10, y=165, width=430, height=25)
 
 label = ttk.Label(window, text='Fonta22 © 2023', anchor='e')
 label.place(x=10, y=195)
-
-"""
-Hyperlink to GitHub profile
-
-link = Label(window, text="Fonta22", fg="blue", cursor="hand2")
-link.place(x=10, y=195)
-link.bind("<Button-1>", lambda e: webbrowser.open_new('https://github.com/Fonta22'))
-"""
 
 window.mainloop()
