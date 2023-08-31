@@ -1,0 +1,7 @@
+# Binaries
+/bin/
+*.exe
+*.zip
+
+# GD testing folder
+/geometry_dash/
