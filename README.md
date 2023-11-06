@@ -13,7 +13,7 @@ Run the **executable** file, specify the path to Geometry Dash, and press the bu
 
 ## Development
 ### Resources.zip
-Download [Resources.zip](https://drive.google.com/file/d/1w2d-uhss0VLxuLlD4QD7cJIcvfrwOg9b/view?usp=sharing) and place it inside `src\data`. The file couldn't be uploaded to the repository because it is too big, but it's necessary to the project to be run.
+Download [Resources.zip](https://drive.google.com/file/d/1w2d-uhss0VLxuLlD4QD7cJIcvfrwOg9b/view?usp=sharing) and place it inside `src\data`. The file couldn't be uploaded to the repository because it is too big, but it's necessary for the project to be run.
 
 ### Dependencies
 - `os`
