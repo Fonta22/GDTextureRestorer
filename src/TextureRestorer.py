@@ -1,61 +1,126 @@
 import os
 import zipfile
-from tkinter import *
-from tkinter import filedialog, ttk, messagebox
+
+from tkinter   import Tk, PhotoImage, Label, Entry, Button, filedialog, ttk, Toplevel, messagebox
 from threading import Thread
 
-def openFile():
-    filepath = filedialog.askopenfilename(
-        title='Find Geometry Dash',
-        filetypes=(
-            ('Executable', '*.exe'),
-            ('All Files', '*.*')
+
+class TextureRestorer:
+    def __init__(self, master):
+        """
+        Initialize the TextureRestorer class.
+
+        Parameters:
+        - master (Tk): The Tkinter root window.
+        """
+        self.master = master
+        self.setup_window()
+
+    def setup_window(self):
+        """
+        Set up the main Tkinter window.
+        """
+        self.master.title('Geometry Dash Texture Restorer')
+        self.master.iconbitmap(default='./assets/arrow.ico')
+        self.master.geometry('450x220')
+        self.master.resizable(False, False)
+
+        self.setup_widgets()
+
+    def setup_widgets(self):
+        """
+        Set up the widgets in the main window.
+        """
+        img = PhotoImage(file='./assets/logo.png').subsample(3, 3)
+        Label(self.master, image=img).pack()
+
+        self.path_input = ttk.Entry(self.master)
+        self.path_input.insert(0, 'Geometry Dash Path')
+        self.path_input.place(x=10, y=140, width=390, height=20)
+
+        browse_btn = ttk.Button(self.master, text='...', command=self.open_file)
+        browse_btn.place(x=410, y=140, width=30, height=20)
+
+        restore_btn = ttk.Button(self.master, text='Restore Original Textures', command=self.show_unzip_progress)
+        restore_btn.place(x=10, y=165, width=430, height=25)
+
+        label = ttk.Label(self.master, text='Fonta22 © 2023', anchor='e')
+        label.place(x=10, y=195)
+
+    @staticmethod
+    def open_file():
+        """
+        Open a file dialog to select the Geometry Dash executable.
+        """
+        filepath = filedialog.askopenfilename(
+            title='Find Geometry Dash',
+            filetypes=(('Executable', '*.exe'), ('All Files', '*.*'))
         )
-    )
 
-    path_input.delete(0, END)
+        if filepath:
+            filepath = filepath.replace('/', '\\')
+            self.path_input.delete(0, ttk.END)
+            self.path_input.insert(0, filepath)
 
-    if filepath == '':
-        path_input.insert(0, 'Geometry Dash Path')
-    else:
-        filepath = filepath.replace('/', '\\')
-        path_input.insert(0, filepath)
+    def show_unzip_progress(self):
+        """
+        Show the progress window for unzipping textures.
+        """
+        gd_path = self.path_input.get()
 
-def showUnzipProgress():
-    gd_path = path_input.get()
+        if not os.path.isfile(gd_path):
+            messagebox.showerror('Invalid Path', 'You need to enter the path to Geometry Dash.')
+            return
 
-    if not os.path.isfile(gd_path):
-        messagebox.showerror('Invalid Path', 'You need to enter the path to Geometry Dash.')
-        return
-    
-    destination_path = gd_path.split('\\')
-    destination_path = '\\'.join(destination_path[:-1])
+        destination_path = os.path.dirname(gd_path)
 
-    top = Toplevel()
-    top.title('Unzipping Textures')
+        progress_window = UnzipProgressWindow(self.master, destination_path)
+        progress_window.start_unzip_thread()
 
-    top_width = 300
-    top_height = 80
+class UnzipProgressWindow(Toplevel):
+    def __init__(self, master, destination_path):
+        """
+        Initialize the UnzipProgressWindow class.
 
-    top_x = window.winfo_x() + widnow_width/6
-    top_y = window.winfo_y() + window_height/3
+        Parameters:
+        - master (Tk): The Tkinter root window.
+        - destination_path (str): The path where the textures will be extracted.
+        """
+        super().__init__(master)
+        self.title('Unzipping Textures')
+        self.geometry('300x80')
+        self.resizable(False, False)
 
-    top.geometry("%dx%d+%d+%d" % (top_width, top_height, top_x, top_y))
-    top.resizable(False, False)
+        self.setup_widgets()
 
-    title_label = ttk.Label(top, text='Restoring Original Textures')
-    title_label.place(x=10, y=5)
+        self.destination_path = destination_path
 
-    pBar = ttk.Progressbar(top, orient=HORIZONTAL, length=280, mode="determinate", maximum=100, value=0)
-    pBar.place(x=10, y=25)
+    def setup_widgets(self):
+        """
+        Set up widgets in the progress window.
+        """
+        title_label = ttk.Label(self, text='Restoring Original Textures')
+        title_label.place(x=10, y=5)
 
-    percentage_label = ttk.Label(top, text='0%', width='10', anchor="e", justify=LEFT)
-    percentage_label.place(x=225, y=5)
+        self.pBar = ttk.Progressbar(self, orient=ttk.HORIZONTAL, length=280, mode="determinate", maximum=100, value=0)
+        self.pBar.place(x=10, y=25)
 
-    size_label = ttk.Label(top, text='')
-    size_label.place(x=10, y=50)
+        self.percentage_label = ttk.Label(self, text='0%', width='10', anchor="e", justify=ttk.LEFT)
+        self.percentage_label.place(x=225, y=5)
 
-    def unzip():
+        size_label = ttk.Label(self, text='')
+        size_label.place(x=10, y=50)
+
+    def start_unzip_thread(self):
+        """
+        Start a thread for the unzip process.
+        """
+        Thread(target=self.unzip).start()
+
+    def unzip(self):
+        """
+        Unzip the textures and update the progress bar.
+        """
         zf = zipfile.ZipFile('./data/Resources.zip')
         uncompress_size = sum((file.file_size for file in zf.infolist()))
         extracted_size = 0
@@ -64,51 +129,17 @@ def showUnzipProgress():
             extracted_size += file.file_size
             percentage = extracted_size * 100 / uncompress_size
 
-            pBar['value'] = percentage
-            percentage_label['text'] = f'{int(percentage)}%'
-            size_label['text'] = f'{str(round(extracted_size * 0.000001, 2))} MB of {str(round(uncompress_size * 0.000001, 2))} MB uncompressed'
+            self.pBar['value'] = percentage
+            self.percentage_label['text'] = f'{int(percentage)}%'
+            size_label_text = f'{round(extracted_size * 0.000001, 2)} MB of {round(uncompress_size * 0.000001, 2)} MB uncompressed'
+            size_label['text'] = size_label_text
 
-            zf.extract(file, path=destination_path)
-        
-        top.destroy()
-        top.update()
+            zf.extract(file, path=self.destination_path)
 
+        self.destroy()
         messagebox.showinfo(title="Textures Restored", message="Textures restored successfully.")
-    
-    Thread(target=unzip).start()
-    top.mainloop()
 
-window = Tk()
-
-widnow_width = 450
-window_height = 220
-
-screen_width = window.winfo_screenwidth()
-screen_height = window.winfo_screenheight()
-
-window_x = (screen_width/2) - (widnow_width/2)
-window_y = (screen_height/2) - (window_height/2)
-
-window.geometry('%dx%d+%d+%d' % (widnow_width, window_height, window_x, window_y))
-
-window.title('Geometry Dash Texture Restorer')
-window.iconbitmap(default='./assets/arrow.ico')
-window.resizable(False, False)
-
-img = PhotoImage(file='./assets/logo.png').subsample(3, 3)
-Label(window, image=img).pack()
-
-path_input = ttk.Entry(window)
-path_input.insert(0, 'Geometry Dash Path')
-path_input.place(x=10, y=140, width=390, height=20)
-
-browse_btn = ttk.Button(window, text='...', command=openFile)
-browse_btn.place(x=410, y=140, width=30, height=20)
-
-remove_btn = ttk.Button(window, text='Restore Original Textures', command=showUnzipProgress)
-remove_btn.place(x=10, y=165, width=430, height=25)
-
-label = ttk.Label(window, text='Fonta22 © 2023', anchor='e')
-label.place(x=10, y=195)
-
-window.mainloop()
+if __name__ == "__main__":
+    root = Tk()
+    app = TextureRestorer(root)
+    root.mainloop()
