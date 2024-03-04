@@ -18,7 +18,9 @@ class TextureRestorer:
 
     def setup_widgets(self):
         img = tk.PhotoImage(file='./assets/logo.png').subsample(3, 3)
-        tk.Label(self.master, image=img).pack()
+        label = tk.Label(self.master, image=img)
+        label.image = img
+        label.pack()
 
         self.path_input = ttk.Entry(self.master)
         self.path_input.insert(0, 'Geometry Dash Path')
@@ -66,9 +68,9 @@ class UnzipProgressWindow(tk.Toplevel):
 
     def setup_widgets(self):
         ttk.Label(self, text='Restoring Original Textures').place(x=10, y=5)
-        self.pBar = ttk.Progressbar(self, orient=ttk.HORIZONTAL, length=280, mode="determinate", maximum=100, value=0)
+        self.pBar = ttk.Progressbar(self, orient='horizontal', length=280, mode="determinate", maximum=100, value=0)
         self.pBar.place(x=10, y=25)
-        self.percentage_label = ttk.Label(self, text='0%', width='10', anchor="e", justify=ttk.LEFT)
+        self.percentage_label = ttk.Label(self, text='0%', width='10', anchor="e", justify='left')
         self.percentage_label.place(x=225, y=5)
         self.size_label = ttk.Label(self, text='')
         self.size_label.place(x=10, y=50)
