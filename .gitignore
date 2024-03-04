@@ -3,5 +3,10 @@
 *.exe
 *.zip
 
+# Pyinstaller
+*.spec
+/src/build/
+/src/dist/
+
 # GD testing folder
 /geometry_dash/
