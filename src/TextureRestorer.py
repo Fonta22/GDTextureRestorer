@@ -1,4 +1,5 @@
 import os
+import hashlib
 import zipfile
 import threading
 import tkinter as tk
@@ -62,11 +63,23 @@ class TextureRestorer:
         )
 
         if not zip_filepath:
-            messagebox.showerror('Invalid File', 'You need to select the Resources.zip file.')
+            messagebox.showerror('Invalid File', 'You need to select the Resources.zip.')
+            return
+
+        if not self.verify_md5(zip_filepath):
+            messagebox.showerror('Invalid File', 'esources.zip does not match the expected MD5 hash. Please download Resources.zip from the official repo.')
             return
 
         unzip_window = UnzipProgressWindow(self.master, destination_path, zip_filepath)
         unzip_window.unzip()
+
+    def verify_md5(self, filepath):
+        expected_md5 = '2172221137bb57a848f6e56e3556ed9c'
+        with open(filepath, 'rb') as f:
+            md5_hash = hashlib.md5()
+            while chunk := f.read(4096):
+                md5_hash.update(chunk)
+        return md5_hash.hexdigest() == expected_md5
 
 class UnzipProgressWindow(tk.Toplevel):
     def __init__(self, master, destination_path, zip_filepath):
