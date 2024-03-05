@@ -37,11 +37,12 @@ class TextureRestorer:
     def open_file(self):
         filepath = filedialog.askopenfilename(
             title='Find Geometry Dash',
-            filetypes=(('Executable', '*.exe'), ('All Files', '*.*'))
+            filetypes=(('Executable', '*.exe'), ('All Files', '*.*')),
+            initialdir=os.getcwd()  # Set the initial directory
         )
 
         if filepath:
-            filepath = filepath.replace('/', '\\')
+            filepath = os.path.normpath(filepath)
             self.path_input.delete(0, tk.END)
             self.path_input.insert(0, filepath)
 
@@ -54,16 +55,28 @@ class TextureRestorer:
 
         destination_path = os.path.dirname(gd_path)
 
-        progress_window = UnzipProgressWindow(self.master, destination_path)
-        progress_window.start_unzip_thread()
+        # Ask for the Resources.zip file
+        zip_filepath = filedialog.askopenfilename(
+            title='Select Resources.zip',
+            filetypes=(('ZIP Files', '*.zip'), ('All Files', '*.*')),
+            initialdir=os.getcwd()  # Set the initial directory
+        )
+
+        if not zip_filepath:
+            messagebox.showerror('Invalid File', 'You need to select the Resources.zip file.')
+            return
+
+        unzip_window = UnzipProgressWindow(self.master, destination_path, zip_filepath)
+        unzip_window.unzip()
 
 class UnzipProgressWindow(tk.Toplevel):
-    def __init__(self, master, destination_path):
+    def __init__(self, master, destination_path, zip_filepath):
         super().__init__(master)
         self.title('Unzipping Textures')
         self.geometry('300x80')
         self.resizable(False, False)
         self.destination_path = destination_path
+        self.zip_filepath = zip_filepath
         self.setup_widgets()
 
     def setup_widgets(self):
@@ -75,11 +88,8 @@ class UnzipProgressWindow(tk.Toplevel):
         self.size_label = ttk.Label(self, text='')
         self.size_label.place(x=10, y=50)
 
-    def start_unzip_thread(self):
-        threading.Thread(target=self.unzip).start()
-
     def unzip(self):
-        with zipfile.ZipFile('./data/Resources.zip') as zf:
+        with zipfile.ZipFile(self.zip_filepath) as zf:
             uncompress_size = sum(file.file_size for file in zf.infolist())
             extracted_size = 0
 
@@ -88,8 +98,8 @@ class UnzipProgressWindow(tk.Toplevel):
                 percentage = extracted_size * 100 / uncompress_size
 
                 self.pBar['value'] = percentage
-                self.percentage_label['text'] = f'{int(percentage)}%'
-                size_label_text = f'{round(extracted_size * 0.000001, 2)} MB of {round(uncompress_size * 0.000001, 2)} MB uncompressed'
+                self.percentage_label['text'] = '{}%'.format(int(percentage))
+                size_label_text = '{:.2f} MB of {:.2f} MB uncompressed'.format(extracted_size * 0.000001, uncompress_size * 0.000001)
                 self.size_label['text'] = size_label_text
 
                 zf.extract(file, path=self.destination_path)
