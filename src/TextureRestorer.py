@@ -38,7 +38,7 @@ class TextureRestorer:
         filepath = filedialog.askopenfilename(
             title='Find Geometry Dash',
             filetypes=(('Executable', '*.exe'), ('All Files', '*.*')),
-            initialdir=os.getcwd()  # Set the initial directory
+            initialdir=os.getcwd()
         )
 
         if filepath:
@@ -55,11 +55,10 @@ class TextureRestorer:
 
         destination_path = os.path.dirname(gd_path)
 
-        # Ask for the Resources.zip file
         zip_filepath = filedialog.askopenfilename(
             title='Select Resources.zip',
             filetypes=(('ZIP Files', '*.zip'), ('All Files', '*.*')),
-            initialdir=os.getcwd()  # Set the initial directory
+            initialdir=os.getcwd()
         )
 
         if not zip_filepath:
