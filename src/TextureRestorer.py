@@ -77,7 +77,7 @@ class TextureRestorer:
         expected_md5 = '2172221137bb57a848f6e56e3556ed9c'
         with open(filepath, 'rb') as f:
             md5_hash = hashlib.md5()
-            while chunk := f.read(4096):
+            for chunk in iter(lambda: f.read(4096), b""):
                 md5_hash.update(chunk)
         return md5_hash.hexdigest() == expected_md5
 
