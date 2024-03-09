@@ -25,15 +25,15 @@ class TextureRestorer:
 
         self.path_input = ttk.Entry(self.master)
         self.path_input.insert(0, 'Geometry Dash Path')
-        self.path_input.place(x=10, y=140, width=390, height=20)
+        self.path_input.place(relx=0.02, rely=0.64, relwidth=0.88, relheight=0.09)
 
         browse_btn = ttk.Button(self.master, text='...', command=self.open_file)
-        browse_btn.place(x=410, y=140, width=30, height=20)
+        browse_btn.place(relx=0.92, rely=0.64, relwidth=0.05, relheight=0.09)
 
         restore_btn = ttk.Button(self.master, text='Restore Original Textures', command=self.show_unzip_progress)
-        restore_btn.place(x=10, y=165, width=430, height=25)
+        restore_btn.place(relx=0.02, rely=0.75, relwidth=0.95, relheight=0.11)
 
-        ttk.Label(self.master, text='Fonta22 © 2023', anchor='e').place(x=10, y=195)
+        ttk.Label(self.master, text='Fonta22 © 2023', anchor='e').place(relx=0.02, rely=0.90)
 
     def open_file(self):
         filepath = filedialog.askopenfilename(
@@ -67,17 +67,16 @@ class TextureRestorer:
             return
 
         if not self.verify_md5(zip_filepath):
-            messagebox.showerror('Invalid File', 'esources.zip does not match the expected MD5 hash. Please download Resources.zip from the official repo.')
+            messagebox.showerror('Invalid File', 'Resources.zip does not match the expected MD5 hash. Please download Resources.zip from the official repo.')
             return
 
-        unzip_window = UnzipProgressWindow(self.master, destination_path, zip_filepath)
-        unzip_window.unzip()
+        UnzipProgressWindow(self.master, destination_path, zip_filepath)
 
     def verify_md5(self, filepath):
         expected_md5 = '2172221137bb57a848f6e56e3556ed9c'
         with open(filepath, 'rb') as f:
             md5_hash = hashlib.md5()
-            while chunk := f.read(4096):
+            for chunk in iter(lambda: f.read(4096), b""):
                 md5_hash.update(chunk)
         return md5_hash.hexdigest() == expected_md5
 
@@ -90,34 +89,39 @@ class UnzipProgressWindow(tk.Toplevel):
         self.destination_path = destination_path
         self.zip_filepath = zip_filepath
         self.setup_widgets()
+        self.unzip()
 
     def setup_widgets(self):
-        ttk.Label(self, text='Restoring Original Textures').place(x=10, y=5)
+        ttk.Label(self, text='Restoring Original Textures').place(relx=0.03, rely=0.06)
         self.pBar = ttk.Progressbar(self, orient='horizontal', length=280, mode="determinate", maximum=100, value=0)
-        self.pBar.place(x=10, y=25)
+        self.pBar.place(relx=0.03, rely=0.31, relwidth=0.93, relheight=0.31)
         self.percentage_label = ttk.Label(self, text='0%', width='10', anchor="e", justify='left')
-        self.percentage_label.place(x=225, y=5)
+        self.percentage_label.place(relx=0.70, rely=0.06)
         self.size_label = ttk.Label(self, text='')
-        self.size_label.place(x=10, y=50)
+        self.size_label.place(relx=0.03, rely=0.66)
 
     def unzip(self):
-        with zipfile.ZipFile(self.zip_filepath) as zf:
-            uncompress_size = sum(file.file_size for file in zf.infolist())
-            extracted_size = 0
+        def _unzip():
+            with zipfile.ZipFile(self.zip_filepath) as zf:
+                file_infos = zf.infolist()
+                uncompress_size = sum(file.file_size for file in file_infos)
+                extracted_size = 0
 
-            for file in zf.infolist():
-                extracted_size += file.file_size
-                percentage = extracted_size * 100 / uncompress_size
+                for file in file_infos:
+                    extracted_size += file.file_size
+                    percentage = extracted_size * 100 / uncompress_size
 
-                self.pBar['value'] = percentage
-                self.percentage_label['text'] = '{}%'.format(int(percentage))
-                size_label_text = '{:.2f} MB of {:.2f} MB uncompressed'.format(extracted_size * 0.000001, uncompress_size * 0.000001)
-                self.size_label['text'] = size_label_text
+                    self.pBar['value'] = percentage
+                    self.percentage_label['text'] = f'{int(percentage)}%'
+                    size_label_text = f'{extracted_size * 0.000001:.2f} MB of {uncompress_size * 0.000001:.2f} MB uncompressed'
+                    self.size_label['text'] = size_label_text
 
-                zf.extract(file, path=self.destination_path)
+                    zf.extract(file, path=self.destination_path)
 
-            self.destroy()
-            messagebox.showinfo(title="Textures Restored", message="Textures restored successfully.")
+                self.destroy()
+                messagebox.showinfo(title="Textures Restored", message="Textures restored successfully.")
+
+        threading.Thread(target=_unzip).start()
 
 if __name__ == "__main__":
     root = tk.Tk()
