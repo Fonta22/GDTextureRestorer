@@ -50,11 +50,9 @@ class TextureRestorer:
     def show_unzip_progress(self):
         gd_path = self.path_input.get()
 
-        if not os.path.isfile(gd_path):
+        if not os.path.exists(gd_path):
             messagebox.showerror('Invalid Path', 'You need to enter the path to Geometry Dash.')
             return
-
-        destination_path = os.path.dirname(gd_path)
 
         zip_filepath = filedialog.askopenfilename(
             title='Select Resources.zip',
@@ -70,7 +68,7 @@ class TextureRestorer:
             messagebox.showerror('Invalid File', 'Resources.zip does not match the expected MD5 hash. Please download Resources.zip from the official repo.')
             return
 
-        UnzipProgressWindow(self.master, destination_path, zip_filepath)
+        UnzipProgressWindow(self.master, gd_path, zip_filepath)
 
     def verify_md5(self, filepath):
         expected_md5 = '2172221137bb57a848f6e56e3556ed9c'
@@ -81,12 +79,12 @@ class TextureRestorer:
         return md5_hash.hexdigest() == expected_md5
 
 class UnzipProgressWindow(tk.Toplevel):
-    def __init__(self, master, destination_path, zip_filepath):
+    def __init__(self, master, gd_path, zip_filepath):
         super().__init__(master)
         self.title('Unzipping Textures')
         self.geometry('300x80')
         self.resizable(False, False)
-        self.destination_path = destination_path
+        self.gd_path = gd_path
         self.zip_filepath = zip_filepath
         self.setup_widgets()
         self.unzip()
@@ -116,7 +114,7 @@ class UnzipProgressWindow(tk.Toplevel):
                     size_label_text = f'{extracted_size * 0.000001:.2f} MB of {uncompress_size * 0.000001:.2f} MB uncompressed'
                     self.size_label['text'] = size_label_text
 
-                    zf.extract(file, path=self.destination_path)
+                    zf.extract(file, path=self.gd_path)
 
                 self.destroy()
                 messagebox.showinfo(title="Textures Restored", message="Textures restored successfully.")
