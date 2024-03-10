@@ -118,4 +118,32 @@ class UnzipProgressWindow(tk.Toplevel):
     def setup_widgets(self):
         ttk.Label(self, text='Restoring Original Textures').place(relx=0.03, rely=0.06)
         self.pBar = ttk.Progressbar(self, orient='horizontal', length=380, mode="determinate", maximum=100, value=0)
-        self.pBar.place(relx=0.03, rely=0
+        self.pBar.place(relx=0.03, rely=0.31, relwidth=0.93, relheight=0.31)
+        self.percentage_label = ttk.Label(self, text='0%', width='10', anchor="e", justify='left')
+        self.percentage_label.place(relx=0.70, rely=0.06)
+
+    def unzip(self):
+        def _unzip():
+            with zipfile.ZipFile(self.zip_filepath) as zf:
+                file_infos = zf.infolist()
+                uncompress_size = sum(file.file_size for file in file_infos)
+                extracted_size = 0
+
+                for file in file_infos:
+                    extracted_size += file.file_size
+                    percentage = extracted_size * 100 / uncompress_size
+
+                    self.pBar['value'] = percentage
+                    self.percentage_label['text'] = f'{int(percentage)}%'
+
+                    zf.extract(file, path=self.gd_path)
+
+                self.destroy()
+                messagebox.showinfo(title="Textures Restored", message="Textures restored successfully.")
+
+        threading.Thread(target=_unzip).start()
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = TextureRestorer(root)
+    root.mainloop()
