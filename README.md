@@ -1,6 +1,6 @@
 ![logo](./src/assets/logo.png)
 
-> This logo was made using [GDColon](https://github.com/GDColon)'s [Geometry Dash Font Generator](https://gdcolon.com/gdfont).
+> This logo was designed using [Geometry Dash Font Generator](https://gdcolon.com/gdfont) by [Colon](https://github.com/GDColon).
 
 # Geometry Dash Texture Restorer
 A desktop application to restore the original **Geometry Dash** textures in case a texture pack had been installed.
