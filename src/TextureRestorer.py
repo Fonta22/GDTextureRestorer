@@ -33,7 +33,7 @@ class TextureRestorer:
         restore_btn = ttk.Button(self.master, text='Restore Original Textures', command=self.show_unzip_progress)
         restore_btn.place(relx=0.02, rely=0.75, relwidth=0.95, relheight=0.11)
 
-        ttk.Label(self.master, text='Fonta22 © 2023', anchor='e').place(relx=0.02, rely=0.90)
+        ttk.Label(self.master, text='Fonta22 © 2023', anchor='e').place(relx=0.02, rely=0.88)
 
     def open_file(self):
         filepath = filedialog.askopenfilename(
