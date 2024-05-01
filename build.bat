@@ -11,7 +11,7 @@ if %ERRORLEVEL% NEQ 2 (
 :: check if the version is specified in the arguments
 if "%~1" == "" (
     echo Specify the version as the first argument.
-    echo > build X.X.X
+    echo build X.X.X
     exit /b 1
 )
 
@@ -33,14 +33,18 @@ set "exe=.\tmp\dist\TextureRestorer.exe"
 set "assets=.\src\assets"
 set "data=.\src\data"
 
+:: remove .gitkeep
+del %data%\.gitkeep
+
 :: zip files
 powershell -Command "Compress-Archive -LiteralPath %exe% -DestinationPath %filename%"
 powershell -Command "Compress-Archive -Path %assets%, %data% -Update -DestinationPath %filename%"
 
 :: clean
 rmdir /s /q tmp
-::rmdir /s /q build
-::del *.spec
+
+:: create .gitkeep again
+echo. 2>%data%\.gitkeep
 
 echo.
 echo Generated %filename%
