@@ -54,7 +54,7 @@ class TextureRestorer:
             messagebox.showerror('Invalid Path', 'You need to enter the path to Geometry Dash.')
             return
 
-        destination_path = os.path.dirname(gd_path)
+        destination_path = os.path.dirname(gd_path) + '\\Resources'
 
         zip_filepath = filedialog.askopenfilename(
             title='Select Resources.zip',
